@@ -15,15 +15,15 @@ This solution is also ment as a trigger for ideas or as a suggestion building an
 The User Interface is translated to the German language.
 
 **Screenshots**, from an Android device, with additional information of the various functions. 
-![wasc-ui](https://user-images.githubusercontent.com/47274144/72217110-576ed000-352a-11ea-9857-3a41667dd50f.png)
+![wasc-ui](https://user-images.githubusercontent.com/47274144/72217193-74f06980-352b-11ea-9eb9-80437d275bd7.png)
 
 **Communication concept** with HTTP API requests between Node-RED and Domoticz.
-![wasc-communication](https://user-images.githubusercontent.com/47274144/72217109-550c7600-352a-11ea-91f2-f87c98e709cf.png)
+![wasc-communication](https://user-images.githubusercontent.com/47274144/72217198-889bd000-352b-11ea-83b3-205ac32fef02.png)
 
 ### Notes
-In the mean time, after having used the application for a while, it has become the main application to access the (our) Domoticz Home Automation system from various devices.
+In the mean time, after having used the application for a while, it has become the _main application to access_ the (our) Domoticz Home Automation system from various devices.
 
-The application is rather tailer made.
+The application is rather _tailer made_.
 If want to use for own purposes, it will need a deep dive into the solution, which is based on Node-RED and JavaScript (used in the many function nodes).
 The flows are commented, so recommend to checkout.
 In this document, the flows are described more at higher level.
@@ -33,11 +33,11 @@ Visit the [Node-RED website](https://nodered.org/) to explore more.
 The author is also on a steep learning curve on how to develop Node-RED solutions.
 This means, there might be better ways to accomplish a function, but so far this solution is working fine.
 
-The solution is being developed further but this documentation might not be up-to-date. Check out the comments in the flows.
+The solution is being _developed further_ but this documentation might not be up-to-date. Check out the comments in the flows.
 
 ### Documentation
-The PDF document *domoticz-webapp-sitecontrol.pdf* describes the solution and the concept.
-The files wasc-*.flow* and subflow contain the Node-RED flows (formatted).
+The PDF document **domoticz-webapp-sitecontrol.pdf** describes the solution and the concept.
+The files starting with *wasc-* contains the Node-RED flows (formatted). Use the Node-RED import function to import as new flow.
 
 ### Credits
 To the developers of Domoticz and Node-RED and to all sharing related information.
