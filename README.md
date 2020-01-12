@@ -3,7 +3,7 @@ Web based GUI, using Node-RED, to control a Domoticz Home Automation System with
 Part of the Domoticz Home Automation Workbook by the author.
 
 ### Purpose
-To control the Domoticz Home Automation System, running on a Raspberry Pi, via a browser-based application (WebUI, built with Node-RED).
+To control the Domoticz Home Automation System, running on a Raspberry Pi 3B+, via a browser-based application (WebUI, built with Node-RED).
 
 * Easy-to-use User Interface accesible from any device capable running a browser (smartphones, tablets, PC, SBC, TV)
 * Control heating (HomematicIP) & lights (Philips Hue)
@@ -39,6 +39,9 @@ The solution is being _developed further_ but this documentation might not be up
 ### Documentation
 The PDF document **domoticz-webapp-sitecontrol.pdf** describes the solution and the concept.
 The files starting with **wasc** contains the Node-RED flows & subflows (formatted). Use the Node-RED import function to import as new flow.
+
+### Software Versions
+Linux: 4.19.66-v7+ #1253, Domoticz: 4.10717, Node-RED: 1.0.3 Node-RED Dashboard: 2.19.3
 
 ### Credits
 To the developers of Domoticz and Node-RED and to all sharing related information.
