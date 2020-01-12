@@ -1,0 +1,804 @@
+[
+    {
+        "id": "5f174a19.c0f3a4",
+        "type": "subflow",
+        "name": "dom property",
+        "info": "Get\n - a property or all properties for a specific device or\n - all device properties\n\n## Node Properties\n### Host\nIP address of the Domoticz System.\nUse 127.0.0.1 if Node-RED is running on the same system as Domoticz.\nDefault: 127.0.0.1\n\n### Port\nPort used by the Domoticz System.\nDefault: 8080\n\n### Context\nIf set to true, the global context value _domip_ for the Host & Port is used.\n`global.get(\"domip\")`\nDefault: false\n\n### Idx (Number)\nIdx of the device.\nIf the Idx is set to 0, then the status of ALL devices is returned. To select a device, use `msg.payload.result[index]`. The index start with 0 - array size -1.\n\n### Property (String)\nProperty of the device, taken from the HTTP API request result. Example: name or Temp.\nIf left blank, the full status is returned from which a property can be selected. Example:\n`msg.payload.Name` or `msg.payload.Temp`.\n\n### Input (JSON String)\nIf set to true, the input msg.payload is taken from a JSON string. The properties Idx & Property are not used. The JSON format: `{\"idx\":idx,\"property\":property}`.\nExample:\n`msgtemperature.payload = '{\"idx\":' + msg.payload.temperature+ ',\"property\":\"Temp\" }';\n`\n### Warn (Boolean)\nIf set to true, ode warn messages are logged.\n\n## Output\nValue of a single device property, all device properties or all devices properties.\n",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "1310efed.3ef4b"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 740,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "2c4a6a11.7d82b6",
+                        "port": 0
+                    },
+                    {
+                        "id": "dc23718d.8e4ac",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "Host",
+                "type": "str",
+                "value": "http://127.0.0.1"
+            },
+            {
+                "name": "Port",
+                "type": "num",
+                "value": "8080"
+            },
+            {
+                "name": "Context",
+                "type": "bool",
+                "value": "true"
+            },
+            {
+                "name": "Idx",
+                "type": "num",
+                "value": "0"
+            },
+            {
+                "name": "Property",
+                "type": "str",
+                "value": "Name"
+            },
+            {
+                "name": "Input",
+                "type": "bool",
+                "value": "false"
+            },
+            {
+                "name": "Warn",
+                "type": "bool",
+                "value": "false"
+            }
+        ],
+        "color": "#DDAA99",
+        "status": {
+            "x": 740,
+            "y": 260,
+            "wires": [
+                {
+                    "id": "dc23718d.8e4ac",
+                    "port": 1
+                }
+            ]
+        }
+    },
+    {
+        "id": "8d7eee82.ad127",
+        "type": "http request",
+        "z": "5f174a19.c0f3a4",
+        "name": "Send HTTP Request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 480,
+        "y": 120,
+        "wires": [
+            [
+                "44073955.f263a8"
+            ]
+        ]
+    },
+    {
+        "id": "1310efed.3ef4b",
+        "type": "function",
+        "z": "5f174a19.c0f3a4",
+        "name": "Set URL HTTP API Request",
+        "func": "// Define the url for the http api request to get the devices status for given idx\n// The url syntax:\n// http://host-ip/json.htm?type=devices&rid=idx\n\n// Check if node warn log messages\nvar warn = env.get(\"Warn\");\nif (warn === undefined) warn = false;\n\n// Get the idx & property first\nvar idx = env.get(\"Idx\");\nvar property = env.get(\"Property\");\n\n// Check if to use input msg.payload as JSON string {\"idx\":idx,\"property\",property}\nvar input = env.get(\"Input\");\nif (input === true){\n    try {\n        const obj = JSON.parse(msg.payload);\n        idx = obj.idx;\n        property = obj.property;\n        if (warn === true) node.warn(\"Input JSON:\"+idx+\",\"+property);\n    } catch (e) {\n        if (warn === true) node.warn(\"Input message is not JSON format.\"+msg.payload);\n    }\n}\n    \n// Set the flow vars - used on other function nodes\nflow.set(\"idx\",idx);\nflow.set(\"property\",property)\n\n// Url & parameter\nvar url;\nvar urlparameter;\nvar alldevices = false;\n// Check the idx. If 0 get status all devices\nif (idx > 0) {\n    urlparameter = \"/json.htm?type=devices&rid=\" + idx;\n}\nif (idx === 0) {\n    urlparameter = \"/json.htm?type=devices&used=true&displayhidden=0\";\n    alldevices = true;\n}\n\n// Set the initial url using host & port\nconst usecontext = env.get(\"Context\");\nif (usecontext === true){\n    url = global.get(\"domip\");\n} else {\n    url = env.get(\"Host\") + \":\" + env.get(\"Port\");\n}\n\n// Define the url \nmsg.url = url + urlparameter;\n\nif (warn === true) node.warn(msg.url);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 220,
+        "y": 120,
+        "wires": [
+            [
+                "8d7eee82.ad127"
+            ]
+        ]
+    },
+    {
+        "id": "44073955.f263a8",
+        "type": "json",
+        "z": "5f174a19.c0f3a4",
+        "name": "Convert Result",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 260,
+        "y": 180,
+        "wires": [
+            [
+                "2c4a6a11.7d82b6"
+            ]
+        ]
+    },
+    {
+        "id": "2c4a6a11.7d82b6",
+        "type": "function",
+        "z": "5f174a19.c0f3a4",
+        "name": "Get Device Status or Device Property",
+        "func": "// Get the (all) device status or selected property\n// If the key Idx is 0, the status of all devices is returned\n// If the key Property is left blank get full device status\n// A property can be selected by using its key from the msg.payload\n// Example: msg.payload.Temp\n// If the idx is not found, an undefined msg is returned\n\n// Debug flag\nvar warn = env.get(\"Warn\");\nif (warn === undefined) warn = false;\n\n// Assign the array key result and check the size\nconst result = msg.payload.result;\n\n// Array result contains single entry for a device\nif (result.length == 1){\n    // Device status from the array key result first (and only entry)\n    const status = result[0];\n    if (status !== undefined){\n        // Get the propertykey for the given key\n        var propertyKey = flow.get(\"property\");\n        // If no property key given, select the full status\n        if (propertyKey.length === 0) {\n            msg.payload = status\n            if (warn === true) node.warn(\"SINGLERESULTFULL:\"+\"Idx:\"+status.idx+\", FULL result\");\n        } else {\n            // Set the msg payload by assigning the property key\n            msg.payload = status[propertyKey];\n            if (warn === true) node.warn(\"SINGLERESULTPROP:\"+\"Idx:\"+status.idx+\", Property:\"+propertyKey+\", Value:\"+msg.payload);\n        }   \n    } else {\n        msg.payload = undefined;\n    }\n}\n\n// Array result contains multiple entries\nif (result.length > 1){\n    msg.payload = result;\n    if (warn === true) node.warn(\"MULTIPLERESULTS:\"+msg.payload);\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 530,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "84f9e515.98a678",
+        "type": "comment",
+        "z": "5f174a19.c0f3a4",
+        "name": "Subflow Domoticz Property (dom property)",
+        "info": "See the subflow description.\n",
+        "x": 180,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "6aea601f.cb02",
+        "type": "catch",
+        "z": "5f174a19.c0f3a4",
+        "name": "Catch Error HTTP & JSON",
+        "scope": [
+            "8d7eee82.ad127",
+            "44073955.f263a8"
+        ],
+        "uncaught": false,
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "57d35e8f.86a1b",
+                "dc23718d.8e4ac"
+            ]
+        ]
+    },
+    {
+        "id": "57d35e8f.86a1b",
+        "type": "debug",
+        "z": "5f174a19.c0f3a4",
+        "name": "DEBUG CATCHDOMPROPERTY",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 500,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "dc23718d.8e4ac",
+        "type": "function",
+        "z": "5f174a19.c0f3a4",
+        "name": "Set Status",
+        "func": "var msgstatus = {};\nmsgstatus.payload = \"Ok\";\n// node.warn(msg.error.message);\nif (msg.error.message.length > 0){\n    msg.payload = \"Error\" + \" \" + msg.error.source.type;\n    msgstatus.payload = \"Error\";\n}\nreturn [msg,msgstatus];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 610,
+        "y": 240,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "2ee7841c.7aba8c",
+        "type": "tab",
+        "label": "WASC-Thermostats",
+        "disabled": false,
+        "info": "HomematicIP Thermostat Control.\nStatus update every 30 seconds."
+    },
+    {
+        "id": "5a1ef88a.f76b88",
+        "type": "ui_dropdown",
+        "z": "2ee7841c.7aba8c",
+        "name": "Select Thermostat",
+        "label": "",
+        "tooltip": "",
+        "place": "",
+        "group": "2352412c.18521e",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "options": [],
+        "payload": "",
+        "topic": "",
+        "x": 670,
+        "y": 140,
+        "wires": [
+            [
+                "7f8d3ab1.5dce24"
+            ]
+        ]
+    },
+    {
+        "id": "425a0dae.cbc794",
+        "type": "inject",
+        "z": "2ee7841c.7aba8c",
+        "name": "Request Device Status",
+        "topic": "",
+        "payload": "deviceid",
+        "payloadType": "flow",
+        "repeat": "30",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.3",
+        "x": 150,
+        "y": 220,
+        "wires": [
+            [
+                "7f8d3ab1.5dce24"
+            ]
+        ]
+    },
+    {
+        "id": "3e4602c.f1424fe",
+        "type": "comment",
+        "z": "2ee7841c.7aba8c",
+        "name": "WASC-Thermostats - Tab Heizung, Group Heizung; Update every 30 seconds",
+        "info": "Control the HomematicIP thermostat devices - brief description.\n\nThe devices are created by the Domoticz Plugin homematicIP Radiator Thermostat (HmIP-eTRV). Each thermostat has its own hardware with the devices (Type,SubType):\nSetpoint (Thermostat,Setpoint),Temperature (Temp,LaCrosse TX3),Battery (General,Alert),Valve (General,Percentage).\n\nThe values (properties from the result of the HTTP API request) are used to display in dashboard ui nodes and to control the setpoint.\n\nThe function node \"Configure ...\" defines the idx of the thermostats and build the ui_dropdown select options. Add or change devices in this node.\n\nEach thermostat has a number of devices with its own idx, i.e. Temperature, Valve, Battery, Setpoint. Each of these idx are used in dedicated flow context used to obtain the properties. After device selection, from the ui_dropdown, the flow context for the selected device are set, i.e. name, temperature, valve, battery, setpoint. The required device property is \"get\" via subflow \"dom property\" and assigned to the specific ui widget.\n\nTo set a setpoint, the ui_dropdown node is used which has predefined values (i.e. 17,18,19 etc and AUS (OFF)). A HTTP API request is triggered to Domoticz to action.\n\nThe battery information, displayed in a ui_text node, is set between OK and Low.\n",
+        "x": 290,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "6194bab2.005544",
+        "type": "ui_gauge",
+        "z": "2ee7841c.7aba8c",
+        "name": "Temperature",
+        "group": "2352412c.18521e",
+        "order": 2,
+        "width": "0",
+        "height": "0",
+        "gtype": "donut",
+        "title": "",
+        "label": "°C",
+        "format": "{{msg.payload}}",
+        "min": "15",
+        "max": "25",
+        "colors": [
+            "#001eb3",
+            "#e6e600",
+            "#05ff3b"
+        ],
+        "seg1": "18",
+        "seg2": "20",
+        "x": 830,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "c17fa178.b2a25",
+        "type": "inject",
+        "z": "2ee7841c.7aba8c",
+        "name": "Set Initial Device",
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.2",
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "8d745ec9.9f37a"
+            ]
+        ]
+    },
+    {
+        "id": "36228771.f91718",
+        "type": "ui_text",
+        "z": "2ee7841c.7aba8c",
+        "group": "2352412c.18521e",
+        "order": 7,
+        "width": "0",
+        "height": "0",
+        "name": "Valve",
+        "label": "Ventil",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 810,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "2f989613.2059fa",
+        "type": "ui_dropdown",
+        "z": "2ee7841c.7aba8c",
+        "name": "Select Setpoint",
+        "label": "",
+        "tooltip": "",
+        "place": "Wähle Sollwert",
+        "group": "2352412c.18521e",
+        "order": 3,
+        "width": "0",
+        "height": "0",
+        "passthru": false,
+        "options": [
+            {
+                "label": "AUS",
+                "value": 0,
+                "type": "num"
+            },
+            {
+                "label": "",
+                "value": "23",
+                "type": "str"
+            },
+            {
+                "label": "",
+                "value": "22",
+                "type": "str"
+            },
+            {
+                "label": "",
+                "value": "21",
+                "type": "str"
+            },
+            {
+                "label": "",
+                "value": "20",
+                "type": "str"
+            },
+            {
+                "label": "",
+                "value": "19",
+                "type": "str"
+            },
+            {
+                "label": "",
+                "value": "18",
+                "type": "str"
+            },
+            {
+                "label": "",
+                "value": "17",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "Sollwert geändert",
+        "x": 1080,
+        "y": 460,
+        "wires": [
+            [
+                "fa8a0e1e.7a2dc",
+                "66107e67.7bc418"
+            ]
+        ]
+    },
+    {
+        "id": "7f8d3ab1.5dce24",
+        "type": "function",
+        "z": "2ee7841c.7aba8c",
+        "name": "Set Thermostat Device",
+        "func": "// Set the flow properties for the thermostat\n\nconst debug = global.get(\"debug\");\n\n// Get the device id and set flow context used for the inject node to update in intervals\nvar deviceid = msg.payload.toString();\nflow.set(\"deviceid\",deviceid);\nif (debug === true) node.warn(\"Thermostat Device selected=\"+deviceid);\n\n// Set the msg payload from the deviceid flow context\nmsg.payload = flow.get(deviceid);\nif (debug === true) node.warn(\"Thermostat Device selected=\"+msg.payload.name);\n\n// Build the json payload for the subflows to get the device data. Ensure proper case for a property.\n// Each device has its own messge output\nvar msgtemperature = {};\nmsgtemperature.payload = '{\"idx\":' + msg.payload.temperature+ ',\"property\":\"Temp\" }';\n\nvar msgvalve = {};\nmsgvalve.payload = '{\"idx\":' + msg.payload.valve+ ',\"property\":\"Data\" }';\n\nvar msgbattery = {};\nmsgbattery.payload = '{\"idx\":' + msg.payload.battery+ ',\"property\":\"Level\" }';\n\nvar msgsetpoint = {};\nmsgsetpoint.payload = '{\"idx\":' + msg.payload.setpoint+ ',\"property\":\"SetPoint\" }';\n\n// set the flow context datapoint vars from the json definition\nflow.set(\"name\", msg.payload.name);\nflow.set(\"battery\", msg.payload.battery);\nflow.set(\"setpoint\", msg.payload.setpoint);\nflow.set(\"temperature\", msg.payload.temperature);\nflow.set(\"valve\", msg.payload.valve);\n\n// log\nif (debug === true) {\nnode.warn(\"Device: N=\"+flow.get(\"name\") + \n    \",B=\"+flow.get(\"battery\") +\n    \",S=\"+flow.get(\"setpoint\") +\n    \",T=\"+flow.get(\"temperature\") +\n    \",V=\"+flow.get(\"valve\")\n    );\n}\n\n// Show the last update\nnode.status({fill:\"green\",shape:\"dot\",text:\"Updated \" + new Date().toLocaleTimeString() });\n\n// Return all device messages\nreturn [msgtemperature,msgvalve,msgbattery,msgsetpoint];",
+        "outputs": 4,
+        "noerr": 0,
+        "x": 400,
+        "y": 220,
+        "wires": [
+            [
+                "57e4c880.c65408"
+            ],
+            [
+                "ab07213b.69cc8"
+            ],
+            [
+                "e8eda3bf.f5811"
+            ],
+            [
+                "4c88e84.f069a18"
+            ]
+        ]
+    },
+    {
+        "id": "8d745ec9.9f37a",
+        "type": "function",
+        "z": "2ee7841c.7aba8c",
+        "name": "Configure Thermostat Idx",
+        "func": "// Configure the IDX of the thermostat devices\n// The flowvar must be unique - take the first IDX, i.e. battery\n// The IDX is used in the switch node to select the device\n\nconst debug = global.get(\"debug\");\n\n// Define the flow vars (context).\n// Each property has a name and index (idx):\n// name,battery,setpoint,temperature,valve\n// The name is used for the select options of the ui_dropdown\ndevices = [\n    {\"MakeLab\":0,\"battery\":197,\"setpoint\":195,\"temperature\":196,\"valve\":216},\n    {\"Wohnzimmer-1\":1,\"battery\":203,\"setpoint\":201,\"temperature\":202,\"valve\":218},\n    {\"Wohnzimmer-2\":2,\"battery\":206,\"setpoint\":204,\"temperature\":205,\"valve\":219},\n    {\"Esszimmer\":3,\"battery\":212,\"setpoint\":210,\"temperature\":211,\"valve\":222},\n    {\"Bad\":4,\"battery\":209,\"setpoint\":207,\"temperature\":208,\"valve\":220},\n    {\"Dusche\":5,\"battery\":200,\"setpoint\":198,\"temperature\":199,\"valve\":217},\n    {\"Flur\":6,\"battery\":215,\"setpoint\":213,\"temperature\":214,\"valve\":221}\n    ];\n\n// Set the select options Name:Index from the previous devices array\n// The name:indexhas devices array index 0 (the first entry)\nfunction setOptions(item, index){\n    const name = Object.keys(item)[0];  //MakeLab\n    const value = Object.values(item)[0]; //0\n    let obj = {};\n    obj[name] = value;\n    msg.options.push(obj);\n    if (debug === true) node.warn(\"SetOptions:Name\" + name + \",Value\" + value);    \n}\n// Init the options rray and add the select item from the devices array first entry\nmsg.options = [];\ndevices.forEach(setOptions);\n\n// Define the flow context) from the devices array\n// battery,setpoint,temperature,valve\nfunction setFlowContext(item, index){\n    // Define the device properties\n    const name = Object.keys(item)[0];  //MakeLab\n    const flowvar = Object.values(item)[0].toString();  // 0\n    const battery = Object.values(item)[1];\n    const setpoint = Object.values(item)[2];\n    const temperature = Object.values(item)[3];\n    const valve = Object.values(item)[4];\n    // Create  JSON string\n    var jsonstr = '{\"name\":\"'+name+'\"'+\n        ',\"battery\":'+battery+\n        ',\"setpoint\":'+setpoint+\n        ',\"temperature\":'+temperature+\n        ',\"valve\":'+valve+\n        '}';\n    if (debug === true) node.warn(jsonstr);\n    // Parse the JSON string to an object and add to the flow context nmed flowvar (i.e. !0\", \"1\" ...)\n    var obj = JSON.parse(jsonstr);\n    flow.set(flowvar, obj);\n    if (debug === true){\n        node.warn(flowvar + \",\" + name + \",\" + battery + \",\" + setpoint + \",\" + temperature + \",\" + valve);    \n        var objdev = flow.get(flowvar);\n        node.warn(\"Name:\" + flowvar+\"=\"+objdev.name);\n    }\n}\ndevices.forEach(setFlowContext);\n\n// Thermostats\n// flowvar,name,battery,setpoint,temperature,valve\n/*\ndefflowvar(\"0\",\"Thermostat Bad\",209,207,208,220);\ndefflowvar(\"1\",\"Thermostat Dusche\",200,198,199,217);\ndefflowvar(\"2\",\"Thermostat Esszimmer\",212,210,211,222);\ndefflowvar(\"3\",\"Thermostat Flur\",215,213,214,221);\ndefflowvar(\"4\",\"Thermostat MakeLab\",197,195,196,216);\ndefflowvar(\"5\",\"Thermostat Wohnzimmer-1\",203,201,202,218);\ndefflowvar(\"6\",\"Thermostat Wohnzimmer-2\",206,204,205,219);\n*/\n\n// Set the initial device\nvar deviceid = msg.payload.toString();\nflow.set(\"deviceid\",deviceid);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 410,
+        "y": 140,
+        "wires": [
+            [
+                "5a1ef88a.f76b88"
+            ]
+        ]
+    },
+    {
+        "id": "fd2177b1.d72ae8",
+        "type": "ui_template",
+        "z": "2ee7841c.7aba8c",
+        "group": "2352412c.18521e",
+        "name": "Set Group Name Properties",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n/*\n    For all elements in the group\n*/\n#Heizung_Heizung_cards {\n    font-size: 20px !important;\n    background-color: \"#FF0000\" !important;\n}\n\n/*\n    For all cardtitles\n.nr-dashboard-theme ui-card-panel p.nr-dashboard-cardtitle {\n    color: #ff0000;\n}\n*/\n\n/* \n    #RaspberryMatic_Dashboard_Hue_cardtitle {\n        font-size: 20px !important;\n        background-color: \"#FF0000\" !important;\n    }\n*/\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "local",
+        "x": 140,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fa8a0e1e.7a2dc",
+        "type": "function",
+        "z": "2ee7841c.7aba8c",
+        "name": "Set URL Setpoint",
+        "func": "// Define the url of changing the setpoint\n// Uses flow context setpoint\n\nconst debug = global.get(\"debug\");\n\n// Define the payload to change the setpoint\nconst idx = flow.get(\"setpoint\");  // number\nconst setpoint = msg.payload;     // string\n\n// Define the url for the list of devices using the state script\n// ?type=command&param=setsetpoint&idx=&setpoint=\nmsg.url = global.get(\"domip\") + \"/json.htm?type=command&param=setsetpoint&idx=\" + idx + \"&setpoint=\" + setpoint;\n\nif (debug === true) node.warn(msg.url);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1330,
+        "y": 460,
+        "wires": [
+            [
+                "5d279d80.3720e4"
+            ]
+        ]
+    },
+    {
+        "id": "e2f09b47.9e9548",
+        "type": "ui_text",
+        "z": "2ee7841c.7aba8c",
+        "group": "2352412c.18521e",
+        "order": 7,
+        "width": "0",
+        "height": "0",
+        "name": "Battery",
+        "label": "Batterie",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 1300,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "5d279d80.3720e4",
+        "type": "http request",
+        "z": "2ee7841c.7aba8c",
+        "name": "Send HTTP Request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 1560,
+        "y": 460,
+        "wires": [
+            [
+                "b684cd63.8008e"
+            ]
+        ]
+    },
+    {
+        "id": "8e3d61.e8cf82a",
+        "type": "ui_toast",
+        "z": "2ee7841c.7aba8c",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "topic": "",
+        "name": "Show Notification Setpoint",
+        "x": 1570,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "9b0a52b0.2d83f",
+        "type": "switch",
+        "z": "2ee7841c.7aba8c",
+        "name": "Check Battery Level",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "num"
+            },
+            {
+                "t": "neq",
+                "v": "1",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 860,
+        "y": 360,
+        "wires": [
+            [
+                "b96d6464.a17dc8"
+            ],
+            [
+                "d001fb00.ab6238"
+            ]
+        ]
+    },
+    {
+        "id": "d001fb00.ab6238",
+        "type": "change",
+        "z": "2ee7841c.7aba8c",
+        "name": "Set Battery Msg Low",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Niedrig",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1100,
+        "y": 380,
+        "wires": [
+            [
+                "e2f09b47.9e9548"
+            ]
+        ]
+    },
+    {
+        "id": "b96d6464.a17dc8",
+        "type": "change",
+        "z": "2ee7841c.7aba8c",
+        "name": "Set Battery Msg OK",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "OK",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1100,
+        "y": 340,
+        "wires": [
+            [
+                "e2f09b47.9e9548"
+            ]
+        ]
+    },
+    {
+        "id": "9f3e709f.b2dfa",
+        "type": "function",
+        "z": "2ee7841c.7aba8c",
+        "name": "Check Setpoint OFF",
+        "func": "// if the temp is below 12 then set setpoint to 0, i.e. off\nconst debug = global.get(\"debug\");\n\nconst setpointoff = 12;\n// convert float to int\nvar setpoint = parseInt(msg.payload);\n\nif (setpoint <= setpointoff) setpoint = 0;\n\nmsg.payload = setpoint\n\nif (debug === true) node.warn(msg.payload);\n\nnode.status({text:\"Setpoint:\" + setpoint});\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 860,
+        "y": 460,
+        "wires": [
+            [
+                "2f989613.2059fa"
+            ]
+        ]
+    },
+    {
+        "id": "66107e67.7bc418",
+        "type": "function",
+        "z": "2ee7841c.7aba8c",
+        "name": "Set Notification Msg",
+        "func": "// Set the notification message to inform state of the setpoint\n// uses flow context name\n\nconst debug = global.get(\"debug\");\nconst setpoint = msg.payload;\n\nmsg.topic = \"Heizung \" + flow.get(\"name\");\n\nif (setpoint === 0){\n    msg.payload = \"Ausgeschaltet\"\n} else {\n    msg.payload = \"Sollwert geändert: \" + setpoint.toString() + \"°C\";\n}\n\nif (debug === true) node.warn(msg.url);\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1340,
+        "y": 500,
+        "wires": [
+            [
+                "8e3d61.e8cf82a"
+            ]
+        ]
+    },
+    {
+        "id": "57e4c880.c65408",
+        "type": "subflow:5f174a19.c0f3a4",
+        "z": "2ee7841c.7aba8c",
+        "name": "Temperature",
+        "env": [
+            {
+                "name": "Idx",
+                "value": "",
+                "type": "num"
+            },
+            {
+                "name": "Property",
+                "value": "",
+                "type": "str"
+            },
+            {
+                "name": "Input",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 650,
+        "y": 200,
+        "wires": [
+            [
+                "6194bab2.005544"
+            ]
+        ]
+    },
+    {
+        "id": "ab07213b.69cc8",
+        "type": "subflow:5f174a19.c0f3a4",
+        "z": "2ee7841c.7aba8c",
+        "name": "Valve",
+        "env": [
+            {
+                "name": "Idx",
+                "value": "",
+                "type": "num"
+            },
+            {
+                "name": "Property",
+                "value": "",
+                "type": "str"
+            },
+            {
+                "name": "Input",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 670,
+        "y": 280,
+        "wires": [
+            [
+                "36228771.f91718"
+            ]
+        ]
+    },
+    {
+        "id": "e8eda3bf.f5811",
+        "type": "subflow:5f174a19.c0f3a4",
+        "z": "2ee7841c.7aba8c",
+        "name": "Battery",
+        "env": [
+            {
+                "name": "Idx",
+                "value": "",
+                "type": "num"
+            },
+            {
+                "name": "Property",
+                "value": "",
+                "type": "str"
+            },
+            {
+                "name": "Input",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 660,
+        "y": 360,
+        "wires": [
+            [
+                "9b0a52b0.2d83f"
+            ]
+        ]
+    },
+    {
+        "id": "4c88e84.f069a18",
+        "type": "subflow:5f174a19.c0f3a4",
+        "z": "2ee7841c.7aba8c",
+        "name": "Setpoint",
+        "env": [
+            {
+                "name": "Idx",
+                "value": "",
+                "type": "num"
+            },
+            {
+                "name": "Property",
+                "value": "",
+                "type": "str"
+            },
+            {
+                "name": "Input",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 660,
+        "y": 460,
+        "wires": [
+            [
+                "9f3e709f.b2dfa"
+            ]
+        ]
+    },
+    {
+        "id": "b684cd63.8008e",
+        "type": "debug",
+        "z": "2ee7841c.7aba8c",
+        "name": "DEBUG THERMOSTATSETPOINT",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1600,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "2352412c.18521e",
+        "type": "ui_group",
+        "z": "",
+        "name": "Heizung",
+        "tab": "ecc243b8.a02d5",
+        "disp": false,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "ecc243b8.a02d5",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Heizung",
+        "icon": "fa-thermometer-half",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    }
+]

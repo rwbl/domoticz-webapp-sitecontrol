@@ -1,0 +1,224 @@
+[
+    {
+        "id": "153a7338.b1986d",
+        "type": "tab",
+        "label": "WASC-Configuration",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "286c9c1.a8b7264",
+        "type": "inject",
+        "z": "153a7338.b1986d",
+        "name": "Inject DOMIP",
+        "topic": "",
+        "payload": "http://127.0.0.1:8080",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 120,
+        "y": 80,
+        "wires": [
+            [
+                "3b2a0ea9.fb10b2"
+            ]
+        ]
+    },
+    {
+        "id": "a381013a.489b1",
+        "type": "comment",
+        "z": "153a7338.b1986d",
+        "name": "WASC Configuration",
+        "info": "Web App Site Control (WASC)\nWeb based GUI, using Node-RED, to control a Domoticz Home Automation System with connected hardware.\n\nConfiguration\n\n### Global Context\ndomip = Set the IP address of the Domoticz system\ndebug = Set debug on (true) or off (false)\nversion = Set the date YYYYMMDD of the last change\n\nThe function node is only used to show the status of the global context.\nChange values in the Inject nodes.\n\nThe debug flag is set to false. Click on the Inject DEBUG True node to turn debug on. Then refresh the various flows or wait for a refresh.\n\n### Style\nEach tab has its own style setting in a ui_template.\nSample for Tab Heizing\n`<style>\n#Heizung_Heizung_cards {\n    font-size: 20px !important;\n    background-color: \"#FF0000\" !important;\n}\n</style>\n`",
+        "x": 110,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "3b2a0ea9.fb10b2",
+        "type": "change",
+        "z": "153a7338.b1986d",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "domip",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 80,
+        "wires": [
+            [
+                "a5e9e924.8c49e8"
+            ]
+        ]
+    },
+    {
+        "id": "65d2e5cb.bae2fc",
+        "type": "ui_template",
+        "z": "153a7338.b1986d",
+        "d": true,
+        "group": "",
+        "name": "Master style override",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n/*\nbody.nr-dashboard-theme {\n background-color: #333333;\n font-family: Calibri;\n}\nbutton, html, input, select, textarea {\n font-family: Calibri;\n}\nbody.nr-dashboard-theme md-content md-card {\n background-color: #33333300;\n color: #d0d0d0;\n}\n\nbody.nr-dashboard-theme md-toolbar {\n background-image: linear-gradient(to right, #404040, #737373);\n box-shadow: 0px 1px 20px #0000008a;\n}\n.nr-dashboard-theme ui-card-panel {\n background-image: linear-gradient(to bottom right, #404040, #737373);\n border: 1px solid #555555;\n box-shadow: 0 0 20px #00000066;\n}\n\n.nr-dashboard-theme ui-card-panel p.nr-dashboard-cardtitle {\n color: #2eb82e;\n text-shadow: 0 0 2px black;\n}\n\n.nr-dashboard-theme .nr-dashboard-form-button {\n background-image: linear-gradient(to bottom right, #8a8a8a6e, #00000070);\n background-color: #00ad03;\n color: #d0d0d0;\n text-shadow: 0 0 2px #525252;\n border-radius:6px;\n}\n\n.nr-dashboard-theme .nr-dashboard-button .md-button {\n background-image: linear-gradient(to bottom right, #8a8a8a6e, #00000070);\n background-color: #00ad03;\n color: #d0d0d0;\n text-shadow: 0 0 2px #525252;\n border-radius:6px;\n}\n.nr-dashboard-theme .nr-dashboard-button .md-button:hover {\n background-color: #00de00;\n}\n\n.nr-dashboard-theme .nr-dashboard-switch md-switch .md-thumb {\n background-image: linear-gradient(to bottom right, #48b349, #115009);\n}\n.nr-dashboard-button .md-button {\n box-shadow: 0 1px 3px 0 rgba(0,0,0,.26)!important;\n width: 100%!important;\n height: 100%!important;\n margin: 0!important;\n min-width: 0!important;\n min-height: 0!important;\n}\n.nr-dashboard-theme .nr-dashboard-slider .md-thumb:after {\n background-image: linear-gradient(to bottom right, #48b349, #115009);\n border-style: none;\n}\n.nr-dashboard-theme .nr-dashboard-numeric .value {\n background-color: #33333300;\n color:#d0d0d0;\n}\n\n.nr-dashboard-numeric .value {\n font-weight: 700;\n text-align: center;\n border: 0;\n}\n\n\n.nr-dashboard-form {\n display: inline-block;\n width: 100%;\n overflow-y: visible;\n}\n#SETTINGS_TEATED_cards {\n min-height: 260px;\n}\n*/\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "global",
+        "x": 120,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "58a6031f.e7a85c",
+        "type": "change",
+        "z": "153a7338.b1986d",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "debug",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 120,
+        "wires": [
+            [
+                "a5e9e924.8c49e8"
+            ]
+        ]
+    },
+    {
+        "id": "b14f1c8c.722ea",
+        "type": "inject",
+        "z": "153a7338.b1986d",
+        "name": "Inject DEBUG False",
+        "topic": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 140,
+        "y": 120,
+        "wires": [
+            [
+                "58a6031f.e7a85c"
+            ]
+        ]
+    },
+    {
+        "id": "44212b50.cd92e4",
+        "type": "inject",
+        "z": "153a7338.b1986d",
+        "name": "Inject DEBUG True",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "58a6031f.e7a85c"
+            ]
+        ]
+    },
+    {
+        "id": "94ecadea.a0888",
+        "type": "change",
+        "z": "153a7338.b1986d",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "version",
+                "pt": "global",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 390,
+        "y": 200,
+        "wires": [
+            [
+                "a5e9e924.8c49e8"
+            ]
+        ]
+    },
+    {
+        "id": "b35f6cba.da869",
+        "type": "inject",
+        "z": "153a7338.b1986d",
+        "name": "Inject Version",
+        "topic": "",
+        "payload": "v20200112",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 120,
+        "y": 200,
+        "wires": [
+            [
+                "94ecadea.a0888"
+            ]
+        ]
+    },
+    {
+        "id": "cd668a1c.fa5a58",
+        "type": "comment",
+        "z": "153a7338.b1986d",
+        "name": "WASC TODO",
+        "info": "ToDos\nAt regular interval get the all devices status via HTTP API request. Store the payload in a global context to be used by other flows.\nQuestion:\nHow to trigger updating other flows if the all devices status gets updated.",
+        "x": 90,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "a5e9e924.8c49e8",
+        "type": "function",
+        "z": "153a7338.b1986d",
+        "name": "Global Context Status",
+        "func": "// Show the global context as node status\nconst info = global.get(\"domip\")+\",\"+\n             global.get(\"debug\")+\",\"+\n             global.get(\"version\");\n\nnode.status({text:info});\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 640,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    }
+]

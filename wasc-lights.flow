@@ -1,0 +1,738 @@
+[
+    {
+        "id": "5f174a19.c0f3a4",
+        "type": "subflow",
+        "name": "dom property",
+        "info": "Get\n - a property or all properties for a specific device or\n - all device properties\n\n## Node Properties\n### Host\nIP address of the Domoticz System.\nUse 127.0.0.1 if Node-RED is running on the same system as Domoticz.\nDefault: 127.0.0.1\n\n### Port\nPort used by the Domoticz System.\nDefault: 8080\n\n### Context\nIf set to true, the global context value _domip_ for the Host & Port is used.\n`global.get(\"domip\")`\nDefault: false\n\n### Idx (Number)\nIdx of the device.\nIf the Idx is set to 0, then the status of ALL devices is returned. To select a device, use `msg.payload.result[index]`. The index start with 0 - array size -1.\n\n### Property (String)\nProperty of the device, taken from the HTTP API request result. Example: name or Temp.\nIf left blank, the full status is returned from which a property can be selected. Example:\n`msg.payload.Name` or `msg.payload.Temp`.\n\n### Input (JSON String)\nIf set to true, the input msg.payload is taken from a JSON string. The properties Idx & Property are not used. The JSON format: `{\"idx\":idx,\"property\":property}`.\nExample:\n`msgtemperature.payload = '{\"idx\":' + msg.payload.temperature+ ',\"property\":\"Temp\" }';\n`\n### Warn (Boolean)\nIf set to true, ode warn messages are logged.\n\n## Output\nValue of a single device property, all device properties or all devices properties.\n",
+        "category": "",
+        "in": [
+            {
+                "x": 40,
+                "y": 120,
+                "wires": [
+                    {
+                        "id": "1310efed.3ef4b"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 740,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "2c4a6a11.7d82b6",
+                        "port": 0
+                    },
+                    {
+                        "id": "dc23718d.8e4ac",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "Host",
+                "type": "str",
+                "value": "http://127.0.0.1"
+            },
+            {
+                "name": "Port",
+                "type": "num",
+                "value": "8080"
+            },
+            {
+                "name": "Context",
+                "type": "bool",
+                "value": "true"
+            },
+            {
+                "name": "Idx",
+                "type": "num",
+                "value": "0"
+            },
+            {
+                "name": "Property",
+                "type": "str",
+                "value": "Name"
+            },
+            {
+                "name": "Input",
+                "type": "bool",
+                "value": "false"
+            },
+            {
+                "name": "Warn",
+                "type": "bool",
+                "value": "false"
+            }
+        ],
+        "color": "#DDAA99",
+        "status": {
+            "x": 740,
+            "y": 260,
+            "wires": [
+                {
+                    "id": "dc23718d.8e4ac",
+                    "port": 1
+                }
+            ]
+        }
+    },
+    {
+        "id": "8d7eee82.ad127",
+        "type": "http request",
+        "z": "5f174a19.c0f3a4",
+        "name": "Send HTTP Request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 480,
+        "y": 120,
+        "wires": [
+            [
+                "44073955.f263a8"
+            ]
+        ]
+    },
+    {
+        "id": "1310efed.3ef4b",
+        "type": "function",
+        "z": "5f174a19.c0f3a4",
+        "name": "Set URL HTTP API Request",
+        "func": "// Define the url for the http api request to get the devices status for given idx\n// The url syntax:\n// http://host-ip/json.htm?type=devices&rid=idx\n\n// Check if node warn log messages\nvar warn = env.get(\"Warn\");\nif (warn === undefined) warn = false;\n\n// Get the idx & property first\nvar idx = env.get(\"Idx\");\nvar property = env.get(\"Property\");\n\n// Check if to use input msg.payload as JSON string {\"idx\":idx,\"property\",property}\nvar input = env.get(\"Input\");\nif (input === true){\n    try {\n        const obj = JSON.parse(msg.payload);\n        idx = obj.idx;\n        property = obj.property;\n        if (warn === true) node.warn(\"Input JSON:\"+idx+\",\"+property);\n    } catch (e) {\n        if (warn === true) node.warn(\"Input message is not JSON format.\"+msg.payload);\n    }\n}\n    \n// Set the flow vars - used on other function nodes\nflow.set(\"idx\",idx);\nflow.set(\"property\",property)\n\n// Url & parameter\nvar url;\nvar urlparameter;\nvar alldevices = false;\n// Check the idx. If 0 get status all devices\nif (idx > 0) {\n    urlparameter = \"/json.htm?type=devices&rid=\" + idx;\n}\nif (idx === 0) {\n    urlparameter = \"/json.htm?type=devices&used=true&displayhidden=0\";\n    alldevices = true;\n}\n\n// Set the initial url using host & port\nconst usecontext = env.get(\"Context\");\nif (usecontext === true){\n    url = global.get(\"domip\");\n} else {\n    url = env.get(\"Host\") + \":\" + env.get(\"Port\");\n}\n\n// Define the url \nmsg.url = url + urlparameter;\n\nif (warn === true) node.warn(msg.url);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 220,
+        "y": 120,
+        "wires": [
+            [
+                "8d7eee82.ad127"
+            ]
+        ]
+    },
+    {
+        "id": "44073955.f263a8",
+        "type": "json",
+        "z": "5f174a19.c0f3a4",
+        "name": "Convert Result",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 260,
+        "y": 180,
+        "wires": [
+            [
+                "2c4a6a11.7d82b6"
+            ]
+        ]
+    },
+    {
+        "id": "2c4a6a11.7d82b6",
+        "type": "function",
+        "z": "5f174a19.c0f3a4",
+        "name": "Get Device Status or Device Property",
+        "func": "// Get the (all) device status or selected property\n// If the key Idx is 0, the status of all devices is returned\n// If the key Property is left blank get full device status\n// A property can be selected by using its key from the msg.payload\n// Example: msg.payload.Temp\n// If the idx is not found, an undefined msg is returned\n\n// Debug flag\nvar warn = env.get(\"Warn\");\nif (warn === undefined) warn = false;\n\n// Assign the array key result and check the size\nconst result = msg.payload.result;\n\n// Array result contains single entry for a device\nif (result.length == 1){\n    // Device status from the array key result first (and only entry)\n    const status = result[0];\n    if (status !== undefined){\n        // Get the propertykey for the given key\n        var propertyKey = flow.get(\"property\");\n        // If no property key given, select the full status\n        if (propertyKey.length === 0) {\n            msg.payload = status\n            if (warn === true) node.warn(\"SINGLERESULTFULL:\"+\"Idx:\"+status.idx+\", FULL result\");\n        } else {\n            // Set the msg payload by assigning the property key\n            msg.payload = status[propertyKey];\n            if (warn === true) node.warn(\"SINGLERESULTPROP:\"+\"Idx:\"+status.idx+\", Property:\"+propertyKey+\", Value:\"+msg.payload);\n        }   \n    } else {\n        msg.payload = undefined;\n    }\n}\n\n// Array result contains multiple entries\nif (result.length > 1){\n    msg.payload = result;\n    if (warn === true) node.warn(\"MULTIPLERESULTS:\"+msg.payload);\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 530,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "84f9e515.98a678",
+        "type": "comment",
+        "z": "5f174a19.c0f3a4",
+        "name": "Subflow Domoticz Property (dom property)",
+        "info": "See the subflow description.\n",
+        "x": 180,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "6aea601f.cb02",
+        "type": "catch",
+        "z": "5f174a19.c0f3a4",
+        "name": "Catch Error HTTP & JSON",
+        "scope": [
+            "8d7eee82.ad127",
+            "44073955.f263a8"
+        ],
+        "uncaught": false,
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "57d35e8f.86a1b",
+                "dc23718d.8e4ac"
+            ]
+        ]
+    },
+    {
+        "id": "57d35e8f.86a1b",
+        "type": "debug",
+        "z": "5f174a19.c0f3a4",
+        "name": "DEBUG CATCHDOMPROPERTY",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 500,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "dc23718d.8e4ac",
+        "type": "function",
+        "z": "5f174a19.c0f3a4",
+        "name": "Set Status",
+        "func": "var msgstatus = {};\nmsgstatus.payload = \"Ok\";\n// node.warn(msg.error.message);\nif (msg.error.message.length > 0){\n    msg.payload = \"Error\" + \" \" + msg.error.source.type;\n    msgstatus.payload = \"Error\";\n}\nreturn [msg,msgstatus];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 610,
+        "y": 240,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "d4310a21.a6d648",
+        "type": "tab",
+        "label": "WASC-Lights",
+        "disabled": false,
+        "info": "Lights control.\nMainly Philips Hue lights.\n"
+    },
+    {
+        "id": "8da2462d.e94028",
+        "type": "inject",
+        "z": "d4310a21.a6d648",
+        "name": "Request Device Status",
+        "topic": "",
+        "payload": "deviceid",
+        "payloadType": "flow",
+        "repeat": "300",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "0.3",
+        "x": 150,
+        "y": 220,
+        "wires": [
+            [
+                "c597c046.90bed"
+            ]
+        ]
+    },
+    {
+        "id": "8829f23c.13f6a",
+        "type": "comment",
+        "z": "d4310a21.a6d648",
+        "name": "WASC-Lights - Tab Lampen, Groups Lampen; Update every 5 minutes",
+        "info": "Control the Philips Hue lights - brief description.\n\nThe devices are created by the hardware Philips Hue Bridge. If a Hue device is added to the Hue App, Domoticz recognizes and creates the new device as Type;SubType Light;Switch\nSwitch-Color or Switch;WW.\n\nThe function node \"Configure ...\" defines the idx of the lights and builds the ui_dropdown select options. For each light the name and idx is used.\nAdd or change devices in this function node.\n\nThe idx is required to get the light status On/Off and the level (0-100%).\n\nTo set the light level, a ui_slider is used which sets the new level when it is released.\n\nThe light can be switched on/off using a ui_switch.\n\nIf the light is off and the slider is moved, the switch is turned on.\n",
+        "x": 270,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "c87b4c0.52aa2b8",
+        "type": "inject",
+        "z": "d4310a21.a6d648",
+        "name": "Set Initial Device (idx=118)",
+        "topic": "",
+        "payload": "118",
+        "payloadType": "num",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.2",
+        "x": 160,
+        "y": 140,
+        "wires": [
+            [
+                "bfad8708.89af28"
+            ]
+        ]
+    },
+    {
+        "id": "15b12240.1729de",
+        "type": "ui_switch",
+        "z": "d4310a21.a6d648",
+        "name": "Switch OnOff",
+        "label": "Aus / Ein",
+        "tooltip": "",
+        "group": "834c28be.ac4ed8",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "decouple": "true",
+        "topic": "Lampe ",
+        "style": "",
+        "onvalue": "On",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "Off",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "x": 990,
+        "y": 280,
+        "wires": [
+            [
+                "81a71725.795cf8",
+                "334e3e9a.da1672",
+                "dc56b49b.d5bec8"
+            ]
+        ]
+    },
+    {
+        "id": "c597c046.90bed",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Set Light Device",
+        "func": "// For the selected light device, set the idx and property from the flow context\n\nconst debug = global.get(\"debug\");\n\n// Get the device id and set flow context used for the inject node to update in intervals\n// A change of value comes from the ui_dropdown node\nvar deviceid = msg.payload.toString();\nflow.set(\"deviceid\",deviceid);\nif (debug === true) node.warn(\"Light Device selected id=\"+deviceid);\n\n// Set the device properties from the flow context (using te device id as key) as msg payload\nconst devobj = flow.get(deviceid);\nif (debug === true) node.warn(\"Light Device selected name=\"+devobj.name);\n\n// set the flow context datapoint vars from the json definition\nflow.set(\"name\", devobj.name);\nflow.set(\"idx\", devobj.idx);\n\n// Build the json payload for the subflows to get the device data.\n// The proprty is left blank because various ui widgets are used (each with its own property).\n// The full device status is used to obtain a property.\nmsg.payload = '{\"idx\":' + devobj.idx+ ',\"property\":\"\" }';\n\nnode.status({text:devobj.name + \",\" + devobj.idx});\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 220,
+        "wires": [
+            [
+                "11e8f6a0.103c89"
+            ]
+        ]
+    },
+    {
+        "id": "bfad8708.89af28",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Configure Lights Idx",
+        "func": "// Configure the idx for the light devices\n// After adding or changing check the ui_dropdown entries of select lights\n// The flow context is set as idx of the device (converted to a string)\n\nconst debug = global.get(\"debug\");\n\n// Set the select options name:value with the idx of the device as the value\nmsg.options = [\n    {\"MakeLab\":118},\n    {\"Wohnzimmer Ute\":231},\n    {\"Wohnzimmer Rob\":113},\n    {\"Wohnzimmer TV\":112},\n    {\"Wohnzimmer Stehlampe\":185},\n    {\"Esszimmer\":111},\n    {\"Eingang\":110}\n    ];\n\n// Define the flow context from the msg.options for each of the devices\nfunction setFlowContext(item, index){\n    // Define the device properties name,idx\n    const name = Object.keys(item)[0];  //MakeLab\n    const idx = Object.values(item)[0]; //118\n    const flowvar = idx.toString();    \n    var jsonstr = '{\"name\":\"'+name+'\"'+',\"idx\":'+idx+'}';\n    // Create the json object an set as flow context\n    var obj = JSON.parse(jsonstr);\n    flow.set(flowvar, obj);\n    if (debug === true){\n        node.warn(\"JSON:\" + jsonstr);\n        var objdev = flow.get(flowvar);\n        node.warn(\"Name:\" + flowvar+\"=\"+objdev.name + \", Idx:\" + objdev.idx);\n    }\n}\nmsg.options.forEach(setFlowContext);\n\n// Set the initial deviceid\nvar deviceid = msg.payload.toString();\nflow.set(\"deviceid\",deviceid);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 400,
+        "y": 140,
+        "wires": [
+            [
+                "3bb3bb97.b4e904"
+            ]
+        ]
+    },
+    {
+        "id": "586b168b.c9f5f8",
+        "type": "ui_template",
+        "z": "d4310a21.a6d648",
+        "group": "834c28be.ac4ed8",
+        "name": "Set Group Name Properties",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "format": "<style>\n/*\n    For all elements in the group\n*/\n#Lampen_Lampen_cards {\n    font-size: 20px !important;\n    background-color: \"#FF0000\" !important;\n}\n\n/*\n    For all cardtitles\n.nr-dashboard-theme ui-card-panel p.nr-dashboard-cardtitle {\n    color: #ff0000;\n}\n*/\n\n/* \n    #RaspberryMatic_Dashboard_Hue_cardtitle {\n        font-size: 20px !important;\n        background-color: \"#FF0000\" !important;\n    }\n*/\n</style>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "local",
+        "x": 140,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "17e27866.417808",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Set URL SetLevel",
+        "func": "const debug = global.get(\"debug\");\n\n// Define the payload to change the level\nconst idx = flow.get(\"idx\");  // number\nconst level = msg.payload;    // number\n\n// Define the url for the list of devices using the state script\n// /json.htm?type=command&param=switchlight&idx=99&switchcmd=Set%20Level&level=6\nmsg.url = global.get(\"domip\") + \"/json.htm?type=command&param=switchlight&idx=\" + idx + \"&switchcmd=Set%20Level&level=\" + level;\n\nif (debug === true) node.warn(msg.url);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1190,
+        "y": 480,
+        "wires": [
+            [
+                "1eb4c854.0ce3f8"
+            ]
+        ]
+    },
+    {
+        "id": "334e3e9a.da1672",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Set State InOut",
+        "func": "// node.warn(msg.payload);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1000,
+        "y": 220,
+        "wires": [
+            [
+                "15b12240.1729de"
+            ]
+        ]
+    },
+    {
+        "id": "8406481b.658178",
+        "type": "change",
+        "z": "d4310a21.a6d648",
+        "name": "Set State On",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "On",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 810,
+        "y": 380,
+        "wires": [
+            [
+                "15b12240.1729de"
+            ]
+        ]
+    },
+    {
+        "id": "dbd2b4f2.096708",
+        "type": "change",
+        "z": "d4310a21.a6d648",
+        "name": "Set Status",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.Status",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 610,
+        "y": 280,
+        "wires": [
+            [
+                "7e8b42ed.c4042c"
+            ]
+        ]
+    },
+    {
+        "id": "81a71725.795cf8",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Set URL OnOff",
+        "func": "const debug = global.get(\"debug\");\n// Define the payload to switch the light\nconst idx = flow.get(\"idx\");  // number\nconst switchcmd = msg.payload;    // number\n\n// Define the url for the list of devices using the state script\n// /json.htm?type=command&param=switchlight&idx=99&switchcmd=Off\nmsg.url = global.get(\"domip\") + \"/json.htm?type=command&param=switchlight&idx=\" + idx + \"&switchcmd=\" + switchcmd;\n\nif (debug === true) node.warn(msg.url);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1180,
+        "y": 280,
+        "wires": [
+            [
+                "e73e40b7.76ec2"
+            ]
+        ]
+    },
+    {
+        "id": "1a3d3d21.19d923",
+        "type": "change",
+        "z": "d4310a21.a6d648",
+        "name": "Set Level",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload.Level",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 620,
+        "y": 480,
+        "wires": [
+            [
+                "234504c4.e4241c"
+            ]
+        ]
+    },
+    {
+        "id": "7e8b42ed.c4042c",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Set State OnOff",
+        "func": "var debug = global.get(\"debug\");\nvar status = msg.payload;\n\nif (status == \"Off\"){\n    msg.payload = \"Off\";\n}\nelse{\n    msg.payload = \"On\";\n}\n\nif (debug === true) node.warn(msg.payload);\n\nnode.status({text:msg.payload});\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 800,
+        "y": 280,
+        "wires": [
+            [
+                "15b12240.1729de"
+            ]
+        ]
+    },
+    {
+        "id": "e73e40b7.76ec2",
+        "type": "http request",
+        "z": "d4310a21.a6d648",
+        "name": "Send HTTP Request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 1440,
+        "y": 280,
+        "wires": [
+            [
+                "e27a8f48.39ee6"
+            ]
+        ]
+    },
+    {
+        "id": "234504c4.e4241c",
+        "type": "ui_slider",
+        "z": "d4310a21.a6d648",
+        "name": "Set Level",
+        "label": "",
+        "tooltip": "",
+        "group": "834c28be.ac4ed8",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "outs": "end",
+        "topic": "Lampe Helligkeit ",
+        "min": 0,
+        "max": "100",
+        "step": "5",
+        "x": 980,
+        "y": 480,
+        "wires": [
+            [
+                "17e27866.417808",
+                "8406481b.658178",
+                "1ae8b04d.3e92e"
+            ]
+        ]
+    },
+    {
+        "id": "b2538321.b533d",
+        "type": "ui_toast",
+        "z": "d4310a21.a6d648",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "topic": "",
+        "name": "Show Notifcation Status ",
+        "x": 1450,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "1eb4c854.0ce3f8",
+        "type": "http request",
+        "z": "d4310a21.a6d648",
+        "name": "Send HTTP Request",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 1440,
+        "y": 480,
+        "wires": [
+            [
+                "ae9bde2e.fcbb5"
+            ]
+        ]
+    },
+    {
+        "id": "f72797ec.eeb5b8",
+        "type": "ui_toast",
+        "z": "d4310a21.a6d648",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "topic": "",
+        "name": "Show Notification Level",
+        "x": 1450,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "dc56b49b.d5bec8",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Set Notification Msg",
+        "func": "\nvar state = msg.payload;\n\nmsg.topic = \"Lampe \" + flow.get(\"name\");\n\nif (state == \"On\"){\n    msg.payload = \"Eingeschaltet\"\n} else {\n    msg.payload = \"Ausgeschaltet\"\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1200,
+        "y": 320,
+        "wires": [
+            [
+                "b2538321.b533d"
+            ]
+        ]
+    },
+    {
+        "id": "11e8f6a0.103c89",
+        "type": "subflow:5f174a19.c0f3a4",
+        "z": "d4310a21.a6d648",
+        "name": "Get Light Status",
+        "env": [
+            {
+                "name": "Idx",
+                "value": "",
+                "type": "num"
+            },
+            {
+                "name": "Property",
+                "value": "",
+                "type": "str"
+            },
+            {
+                "name": "Input",
+                "value": "true",
+                "type": "bool"
+            }
+        ],
+        "x": 420,
+        "y": 280,
+        "wires": [
+            [
+                "dbd2b4f2.096708",
+                "1a3d3d21.19d923"
+            ]
+        ]
+    },
+    {
+        "id": "e27a8f48.39ee6",
+        "type": "debug",
+        "z": "d4310a21.a6d648",
+        "name": "DEBUG LIGHTSSWITCH",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1450,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "ae9bde2e.fcbb5",
+        "type": "debug",
+        "z": "d4310a21.a6d648",
+        "name": "DEBUG LIGHTSLEVEL",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1450,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "1ae8b04d.3e92e",
+        "type": "function",
+        "z": "d4310a21.a6d648",
+        "name": "Set Notification Msg",
+        "func": "var level = msg.payload;\n\nmsg.topic = \"Lampe \" + flow.get(\"name\");\n\nmsg.payload = \"Helligkeit \" + level + \"%\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1200,
+        "y": 520,
+        "wires": [
+            [
+                "f72797ec.eeb5b8"
+            ]
+        ]
+    },
+    {
+        "id": "3bb3bb97.b4e904",
+        "type": "ui_dropdown",
+        "z": "d4310a21.a6d648",
+        "name": "Select Light",
+        "label": "",
+        "tooltip": "",
+        "place": "",
+        "group": "834c28be.ac4ed8",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "options": [],
+        "payload": "",
+        "topic": "",
+        "x": 610,
+        "y": 140,
+        "wires": [
+            [
+                "c597c046.90bed"
+            ]
+        ]
+    },
+    {
+        "id": "834c28be.ac4ed8",
+        "type": "ui_group",
+        "z": "",
+        "name": "Lampen",
+        "tab": "745ceb9d.964cf4",
+        "disp": false,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "745ceb9d.964cf4",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Lampen",
+        "icon": "fa-lightbulb-o",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    }
+]

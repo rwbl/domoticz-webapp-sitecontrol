@@ -1,0 +1,332 @@
+[
+    {
+        "id": "e870a3c3.bd4db",
+        "type": "tab",
+        "label": "WASC-Info",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "f92b322f.2a15b",
+        "type": "inject",
+        "z": "e870a3c3.bd4db",
+        "name": "Set Interval once a day",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "",
+        "crontab": "00 01 * * *",
+        "once": false,
+        "onceDelay": "0.2",
+        "x": 150,
+        "y": 100,
+        "wires": [
+            [
+                "bb74dd4f.0b28e"
+            ]
+        ]
+    },
+    {
+        "id": "2ead1665.7891ca",
+        "type": "http request",
+        "z": "e870a3c3.bd4db",
+        "name": "Get AllUsedDevices",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": false,
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "authType": "",
+        "x": 660,
+        "y": 100,
+        "wires": [
+            [
+                "90dd4a8b.2f5918"
+            ]
+        ]
+    },
+    {
+        "id": "3ec958fe.e729a8",
+        "type": "function",
+        "z": "e870a3c3.bd4db",
+        "name": "Create List Devices Name, Idx",
+        "func": "// Select devices for a specific planid (roomplan) from the full list of devices\n\n// Get the all devices result array property\nvar allDevices = msg.payload.result;\n\n// Show number of device entries from the full list\nvar allDevicesCnt = allDevices.length;\n// node.warn(\"All devices found=\"+allDevicesCnt);\n\n// Get the planid to search for\nvar searchPlanID = flow.get(\"planid\");\n\n// Create new array holding the idx of the devices found\nvar selectedDevices = [];\n\n// Helper functions\nvar date_now = function() {\n    var today = new Date();\n    var dd = today.getDate();\n    var mm = today.getMonth()+1; \n    var yyyy = today.getFullYear();\n    if(dd<10) dd='0'+dd;\n    if(mm<10) mm='0'+mm;\n    return dd+'-'+mm+'-'+yyyy;\n}\n\nfunction createDateObject(value) {\n    var parts = value.split('-');\n    return new Date(parts[2] + \"-\" + parts[1] + \"-\" + parts[0]);\n}\n\n// console.log(date_diff_days('01-01-2020', '31-12-2020'));\nvar date_diff_days = function(date1, date2) {\n    dt1 = createDateObject(date1);  // new Date(date1);\n    dt2 = createDateObject(date2);  // new Date(date2);\nreturn Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate()) ) /(1000 * 60 * 60 * 24));\n}\n\n// Create the array of selected devices\nfunction getDevices(item, index) {\n    // check if the idx is in the searchDevices array\n    if (searchPlanID == item.PlanID){\n        // Define the data starting with the date followed by name\n        var date_item = item.Data.slice(0, 10);\n        var diffdays = date_diff_days(date_now(),date_item);\n        var data = \"\";\n        if (diffdays > 1) {\n            data = item.Data + \" \" + item.Name + \" (in \" + diffdays + \" Tage)\";\n        } else if (diffdays == 1) {\n            data = item.Data + \" \" + item.Name + \" (Morgen)\";\n        } else if (diffdays === 0) {\n            data = item.Data + \" \" + item.Name + \" (Heute)\";\n        } else {\n            data = item.Data + \" \" + item.Name + \" (Fehler. Tage=\" + diffdays + \")\";\n        }\n        // node.warn(\"Date Now:\"+date_now()+\", Date Item:\"+date_item+\", Days:\"+diffdays);\n\n        // add the device info\n        selectedDevices.push(data);\n        // node.warn(searchdevices.indexOf(item.idx) + \"=\"+index + \":\" + item.Name + \" (\" + item.idx + \")\");\n    }\n}\nallDevices.forEach(getDevices);\n\n// Sort the entries by date. The entry strig is sliced to get the date from the first 11 chars.\n// An entry must in format: DD-MM-YYYY Name\nselectedDevices.sort(function(a,b) {\n    a = a.slice(0, 10);\n    b = b.slice(0, 10);\n    a = a.split('-').reverse().join('');\n    b = b.split('-').reverse().join('');\n    // node.warn(a.localeCompare(b));\n    return a.localeCompare(b);\n});\n\n// Check the new array size\n// node.warn(\"Selected devices created=\"+selectedDevices.length);\n\n// Assign the devices array to the payload\nmsg.payload = selectedDevices;\n\n// Return the array with the devices\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 730,
+        "y": 240,
+        "wires": [
+            [
+                "9d8f384.01120c8"
+            ]
+        ]
+    },
+    {
+        "id": "52e37e6d.be2a3",
+        "type": "debug",
+        "z": "e870a3c3.bd4db",
+        "name": "DEBUG GETALLUSEDDEVICES",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload.result",
+        "targetType": "msg",
+        "x": 1040,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "90dd4a8b.2f5918",
+        "type": "json",
+        "z": "e870a3c3.bd4db",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 610,
+        "y": 160,
+        "wires": [
+            [
+                "52e37e6d.be2a3",
+                "3ec958fe.e729a8",
+                "1fd639c1.0afe46"
+            ]
+        ]
+    },
+    {
+        "id": "f570d73f.762298",
+        "type": "comment",
+        "z": "e870a3c3.bd4db",
+        "name": "Dates (Termine)",
+        "info": "Get All Used Devices and select Devices for specific Roomplan Idx  (PlanID).\n\nThe PlnID used is roomplan Termine with idx=4.\n",
+        "x": 100,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "9d8f384.01120c8",
+        "type": "ui_template",
+        "z": "e870a3c3.bd4db",
+        "group": "78c6e3d6.730c2c",
+        "name": "HTML List Dates",
+        "order": 1,
+        "width": "6",
+        "height": "5",
+        "format": "<div style=\"margin: 0 0 0 -40px;\">\n\t<ul>\n\t\t<li ng-repeat=\"date in msg.payload track by $index\"\n\t\t\tstyle=\"list-style-type: none;\">\n\t\t\t<label>\n\t\t\t\t<p ng-model=\"$parent.date\" value=\"{{date}}\" name=\"data\">{{date}}</p>\n\t\t\t\t<hr>\n\t\t\t</label>\n\t\t</li>\n\t</ul>\n</div>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "templateScope": "local",
+        "x": 990,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ae988c19.e83de",
+        "type": "inject",
+        "z": "e870a3c3.bd4db",
+        "name": "Set Roomplan (idx=4)",
+        "topic": "",
+        "payload": "4",
+        "payloadType": "str",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.2",
+        "x": 140,
+        "y": 240,
+        "wires": [
+            [
+                "66e2c2ac.401fdc"
+            ]
+        ]
+    },
+    {
+        "id": "66e2c2ac.401fdc",
+        "type": "change",
+        "z": "e870a3c3.bd4db",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "planid",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 240,
+        "wires": [
+            [
+                "bb74dd4f.0b28e"
+            ]
+        ]
+    },
+    {
+        "id": "e86b7264.62e81",
+        "type": "comment",
+        "z": "e870a3c3.bd4db",
+        "name": "WASC-Info - Tab Info Groups: Termine, Daylight, Version; Update once a day @ 0100",
+        "info": "Display various information- brief description.\n\nDaylight information from the general information of the HTTP API response from GetAllUsedDevices. No Domoticz device used.\n\nDates shows a list in a ui_template with data from a roomplan (idx=4).\n\nVersion information is shown in a ui_text with data taken from global context version (global.version).\n",
+        "x": 310,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "aa136ba9.02e4f8",
+        "type": "inject",
+        "z": "e870a3c3.bd4db",
+        "name": "Set Version",
+        "topic": "",
+        "payload": "version",
+        "payloadType": "global",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.2",
+        "x": 110,
+        "y": 460,
+        "wires": [
+            [
+                "9cd5d1dd.de032"
+            ]
+        ]
+    },
+    {
+        "id": "9cd5d1dd.de032",
+        "type": "ui_text",
+        "z": "e870a3c3.bd4db",
+        "group": "18d9870d.ed3f69",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Version Information",
+        "label": "Web App Site Control by rwbL",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 990,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "a6a422d5.d5453",
+        "type": "comment",
+        "z": "e870a3c3.bd4db",
+        "name": "Version Information",
+        "info": "",
+        "x": 110,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "bb74dd4f.0b28e",
+        "type": "function",
+        "z": "e870a3c3.bd4db",
+        "name": "Set URL GetUsedDevices",
+        "func": "const debug = global.get(\"debug\");\n\n// Define the url for the list of devices using the state script\nmsg.url = global.get(\"domip\") + \"/json.htm?type=devices&used=true&displayhidden=0\";\n\nif (debug === true) node.warn(msg.url);\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 410,
+        "y": 100,
+        "wires": [
+            [
+                "2ead1665.7891ca"
+            ]
+        ]
+    },
+    {
+        "id": "1fd639c1.0afe46",
+        "type": "function",
+        "z": "e870a3c3.bd4db",
+        "name": "Set Daylight Information",
+        "func": "// Select properties from the general all used devices information\n\n// Label is set in the node ui_text: \"Sonne (Tageslänge): \"\nvar data = msg.payload.Sunrise + \n        \" - \" + msg.payload.Sunset +\n        \" (\" + msg.payload.DayLength + \")\";\n\nmsg.payload = data;\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 710,
+        "y": 340,
+        "wires": [
+            [
+                "fdb5ec22.5e84d"
+            ]
+        ]
+    },
+    {
+        "id": "eb8ab64e.a9e678",
+        "type": "comment",
+        "z": "e870a3c3.bd4db",
+        "name": "Daylight Information",
+        "info": "",
+        "x": 110,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "fdb5ec22.5e84d",
+        "type": "ui_text",
+        "z": "e870a3c3.bd4db",
+        "group": "7035d268.db3f4c",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "Daylight Information",
+        "label": "Sonne (Tageslänge)",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 1000,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "78c6e3d6.730c2c",
+        "type": "ui_group",
+        "z": "",
+        "name": "Termine",
+        "tab": "65f60007.fa08c",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "18d9870d.ed3f69",
+        "type": "ui_group",
+        "z": "",
+        "name": "Version",
+        "tab": "65f60007.fa08c",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "7035d268.db3f4c",
+        "type": "ui_group",
+        "z": "",
+        "name": "Daylight",
+        "tab": "65f60007.fa08c",
+        "order": 1,
+        "disp": false,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "65f60007.fa08c",
+        "type": "ui_tab",
+        "z": "",
+        "name": "Info",
+        "icon": "fa-info-circle",
+        "order": 5,
+        "disabled": false,
+        "hidden": false
+    }
+]
