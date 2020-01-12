@@ -10,15 +10,16 @@ To control the Domoticz Home Automation System, running on a Raspberry Pi, via a
 * Information only for weather data, key dates and status postbox
 
 The goal has been to develop a prototype first, i.e. workout the concept with initial functionalitz, to be able to enhance or modify the application further.
-This solution is also ment as a trigger for ideas or as a suggestion building an alternate GUI (WebUI) to access the Domoticz Homeautomation System.
+_This solution is also ment as a trigger for ideas or as a suggestion building an alternate GUI (WebUI) to access the Domoticz Homeautomation System._
 
-The User Interface is translated to the German language.
+The WebUI is translated into German.
 
 **Screenshots**, from an Android device, with additional information of the various functions. 
 ![wasc-ui](https://user-images.githubusercontent.com/47274144/72217193-74f06980-352b-11ea-9eb9-80437d275bd7.png)
 
 **Communication concept** with HTTP API requests between Node-RED and Domoticz.
 ![wasc-communication](https://user-images.githubusercontent.com/47274144/72217198-889bd000-352b-11ea-83b3-205ac32fef02.png)
+_Note:_ Not all functions displayed.
 
 ### Notes
 In the mean time, after having used the application for a while, it has become the _main application to access_ the (our) Domoticz Home Automation system from various devices.
