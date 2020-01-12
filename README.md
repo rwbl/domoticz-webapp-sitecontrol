@@ -38,7 +38,7 @@ The solution is being _developed further_ but this documentation might not be up
 
 ### Documentation
 The PDF document **domoticz-webapp-sitecontrol.pdf** describes the solution and the concept.
-The files starting with *wasc-* contains the Node-RED flows (formatted). Use the Node-RED import function to import as new flow.
+The files starting with **wasc** contains the Node-RED flows & subflows (formatted). Use the Node-RED import function to import as new flow.
 
 ### Credits
 To the developers of Domoticz and Node-RED and to all sharing related information.
