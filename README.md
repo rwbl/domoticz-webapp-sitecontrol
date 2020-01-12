@@ -14,10 +14,10 @@ This solution is also ment as a trigger for ideas or as a suggestion building an
 
 The User Interface is translated to the German language.
 
-Screenshot, from an Android device, with additional information of the various functions. 
+**Screenshots**, from an Android device, with additional information of the various functions. 
 ![wasc-ui](https://user-images.githubusercontent.com/47274144/72217110-576ed000-352a-11ea-9857-3a41667dd50f.png)
 
-The communication concept with HTTP API requests between Node-RED and Domoticz.
+**Communication concept** with HTTP API requests between Node-RED and Domoticz.
 ![wasc-communication](https://user-images.githubusercontent.com/47274144/72217109-550c7600-352a-11ea-91f2-f87c98e709cf.png)
 
 ### Notes
@@ -37,6 +37,7 @@ The solution is being developed further but this documentation might not be up-t
 
 ### Documentation
 The PDF document *domoticz-webapp-sitecontrol.pdf* describes the solution and the concept.
+The files wasc-*.flow* and subflow contain the Node-RED flows (formatted).
 
 ### Credits
 To the developers of Domoticz and Node-RED and to all sharing related information.
