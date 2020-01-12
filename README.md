@@ -37,11 +37,10 @@ Visit the [Node-RED website](https://nodered.org/) to explore more.
 The author is also on a steep learning curve on how to develop Node-RED solutions.
 This means, there might be better ways to accomplish a function, but so far this solution is working fine.
 
-The solution is being _developed further_ but this documentation might not be up-to-date. Check out the comments in the flows.
-
 ### Documentation
 The PDF document **domoticz-webapp-sitecontrol.pdf** describes the solution and the concept.
 The files starting with **wasc** contains the Node-RED flows & subflows (formatted). Use the Node-RED import function to import as new flow.
+The solution is being _developed further_ but the PDF documentation might not be up-to-date. Check out the comments in the flows files.
 
 ### Software Versions
 Linux: 4.19.66-v7+ #1253, Domoticz: 4.10717, Node-RED: 1.0.3 Node-RED Dashboard: 2.19.3
