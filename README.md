@@ -9,7 +9,7 @@ To control the Domoticz Home Automation System, running on a Raspberry Pi 3B+, v
 * Control heating (HomematicIP) & lights (Philips Hue)
 * Information only for weather data, key dates and status postbox
 
-The goal has been to develop a prototype first, i.e. workout the concept with initial functionalitz, to be able to enhance or modify the application further.
+The goal has been to develop a Node-RED prototype first, i.e. workout the concept with initial functionality, to be able to enhance or modify the application further.
 _This solution is also ment as a trigger for ideas or as a suggestion building an alternate GUI (WebUI) to access the Domoticz Homeautomation System._
 
 The WebUI is translated into German.
@@ -24,7 +24,7 @@ _Note:_ Not all functions displayed.
 ### Notes
 In the mean time, after having used the application for a while, it has become the _main application to access_ the (our) Domoticz Home Automation system from various devices.
 
-The application is rather _tailer made_.
+The application is rather _tailer made_ and has ~100 nodes.
 If want to use for own purposes, it will need a deep dive into the solution, which is based on Node-RED and JavaScript (used in the many function nodes).
 The flows are commented, so recommend to checkout.
 In this document, the flows are described more at higher level.
