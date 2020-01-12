@@ -27,7 +27,9 @@ In the mean time, after having used the application for a while, it has become t
 The application is rather _tailer made_ and has ~100 nodes.
 If want to use for own purposes, it will need a deep dive into the solution, which is based on Node-RED and JavaScript (used in the many function nodes).
 The flows are commented, so recommend to checkout.
-In this document, the flows are described more at higher level.
+
+**Screenshot** of the flow just as an illustration. Read more in the PDF document.
+![wasc-flowsillustration](https://user-images.githubusercontent.com/47274144/72219317-1cc66100-3545-11ea-9290-d938f4772926.png)
 
 It is not the intention to explain Node-RED in great detail.
 Visit the [Node-RED website](https://nodered.org/) to explore more.
