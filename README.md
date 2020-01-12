@@ -1,6 +1,6 @@
 # Web App Site Control (WASC)
 Web based GUI, using Node-RED, to control a Domoticz Home Automation System with connected hardware.
-Part of the Domoticz Home Automation Workbook by the author.
+Part of the [Domoticz Home Automation Workbook](https://github.com/rwbl/domoticz-homeautomation-workbook) by the author.
 
 ### Purpose
 To control the Domoticz Home Automation System, running on a Raspberry Pi 3B+, via a browser-based application (WebUI, built with Node-RED).
